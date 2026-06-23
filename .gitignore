@@ -1,0 +1,60 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django files
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media uploads
+media/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Django migrations (only ignore generated migrations in case you don’t want them)
+# Keep app migrations directories for committed schema.
+# If you generate migrations during development, they should still be committed.
+# Comment out the rule below if your workflow requires ignoring migrations.
+# */migrations/0*.py
+
+# Node / frontend
+node_modules/
+
+# IDE / editor
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing / coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Environment variables
+.env
+
+# Logs directory sometimes used by apps
+logs/
+
+# Build artifacts
+build/
+dist/
+
+# Misc
+*.swp
+*.swo
+*.bak
+*.tmp
+

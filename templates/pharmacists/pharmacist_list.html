@@ -1,0 +1,17 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Pharmacist Portal{% endblock %}
+{% block topbar_title %}Pharmacist Portal{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Pharmacist Portal</div>
+<a href="{% url 'prescriptions:prescription-list' %}" class="active"><i class="fa-solid fa-notes-medical"></i> Prescription Queue</a>
+<a href="{% url 'pharmacists:inventory-list' %}"><i class="fa-solid fa-box-archive"></i> Inventory</a>
+{% endblock %}
+
+{% block page_content %}
+<script>window.location.href = "{% url 'prescriptions:prescription-list' %}";</script>
+<div class="hms-empty" style="padding:4rem;">
+  <i class="fa-solid fa-arrow-right"></i>
+  <p>Redirecting to Prescription Queue…</p>
+</div>
+{% endblock %}

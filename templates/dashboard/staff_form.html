@@ -1,0 +1,55 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Add Staff{% endblock %}
+{% block topbar_title %}Add Staff Member{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Overview</div>
+<a href="{% url 'dashboard:dashboard-home' %}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+<div class="sidebar-section">Management</div>
+<a href="{% url 'dashboard:doctor-add' %}"><i class="fa-solid fa-user-doctor"></i> Add Doctor</a>
+<a href="{% url 'dashboard:staff-add' %}" class="active"><i class="fa-solid fa-user-tie"></i> Add Staff</a>
+<a href="{% url 'dashboard:payments-verify' %}"><i class="fa-solid fa-circle-check"></i> Verify Payments</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:560px;margin:0 auto;">
+  <a href="{% url 'dashboard:dashboard-home' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+  </a>
+
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(168,85,247,.15);color:#c084fc;"><i class="fa-solid fa-user-tie"></i></div>
+      <div>
+        <div class="hms-card-title">Add Staff Member</div>
+        <div class="hms-card-sub">Creates an admin or pharmacist staff account</div>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="hms-form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div style="font-size:.75rem;color:var(--hms-muted);margin-top:.25rem;">{{ field.help_text }}</div>{% endif %}
+        {% if field.errors %}<div class="hms-form-error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+
+      {% if form.non_field_errors %}
+      <div class="hms-form-error mb-3" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:.65rem 1rem;border-radius:8px;">
+        {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="d-flex gap-2 mt-3">
+        <a href="{% url 'dashboard:dashboard-home' %}" class="btn-hms btn-hms-ghost">Cancel</a>
+        <button type="submit" class="btn-hms btn-hms-primary" style="flex:1;justify-content:center;">
+          <i class="fa-solid fa-user-plus"></i> Create Staff Account
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

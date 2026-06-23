@@ -1,0 +1,46 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Edit Profile{% endblock %}
+{% block topbar_title %}Edit Profile{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Patient Portal</div>
+<a href="{% url 'patients:patient-profile' %}"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+<a href="{% url 'patients:patient-appointments' %}"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+<a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescriptions</a>
+<a href="{% url 'patients:patient-payments' %}"><i class="fa-solid fa-money-bill-wave"></i> Payments</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:560px;margin:0 auto;">
+  <a href="{% url 'patients:patient-profile' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Profile
+  </a>
+
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(79,110,247,.15);color:#4f6ef7;"><i class="fa-solid fa-user-pen"></i></div>
+      <div>
+        <div class="hms-card-title">Edit Profile</div>
+        <div class="hms-card-sub">Update your personal information</div>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="hms-form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="hms-form-error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <div class="d-flex gap-2 mt-3">
+        <a href="{% url 'patients:patient-profile' %}" class="btn-hms btn-hms-ghost">Cancel</a>
+        <button type="submit" class="btn-hms btn-hms-primary" style="flex:1;justify-content:center;">
+          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

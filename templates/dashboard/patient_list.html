@@ -1,0 +1,69 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Manage Patients{% endblock %}
+{% block topbar_title %}Manage Patients{% endblock %}
+
+{% block page_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Patients</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">View and manage all registered patient accounts</p>
+  </div>
+</div>
+
+<div class="hms-card">
+  <div class="hms-card-header">
+    <div class="hms-card-icon" style="background:rgba(79,110,247,.15);color:#4f6ef7;"><i class="fa-solid fa-hospital-user"></i></div>
+    <div>
+      <div class="hms-card-title">All Patients</div>
+      <div class="hms-card-sub">{{ patients|length }} patient{{ patients|length|pluralize }}</div>
+    </div>
+  </div>
+
+  {% if patients %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Address</th>
+          <th>Joined</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pat in patients %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:.75rem;">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f6ef7,#314cc6);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;">
+                {{ pat.user.first_name|first|upper|default:"P" }}{{ pat.user.last_name|first|upper }}
+              </div>
+              <div>
+                <div style="font-weight:600;">{{ pat.user.full_name|default:pat.user.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="color:var(--hms-muted);">{{ pat.user.email }}</td>
+          <td style="color:var(--hms-muted);font-size:.83rem;">{{ pat.phone|default:"—" }}</td>
+          <td style="color:var(--hms-muted);font-size:.83rem;">{{ pat.address|default:"—" }}</td>
+          <td style="color:var(--hms-muted);font-size:.83rem;">{{ pat.user.date_joined|date:"M d, Y" }}</td>
+          <td style="text-align:right;">
+            <a href="{% url 'dashboard:patient-delete' pat.user.id %}" class="btn-hms btn-hms-danger btn-hms-sm">
+              <i class="fa-solid fa-trash"></i> Delete
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty">
+    <i class="fa-solid fa-hospital-user"></i>
+    <p>No patients found.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Delete Staff{% endblock %}
+{% block topbar_title %}Delete Staff{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Overview</div>
+<a href="{% url 'dashboard:dashboard-home' %}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+<div class="sidebar-section">Management</div>
+<a href="{% url 'dashboard:doctor-list' %}"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+<a href="{% url 'dashboard:staff-list' %}"><i class="fa-solid fa-user-tie"></i> Manage Staff</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:520px;margin:0 auto;">
+  <a href="{% url 'dashboard:staff-list' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back
+  </a>
+  <div class="hms-card" style="border-color:rgba(239,68,68,.25);">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(239,68,68,.15);color:#ef4444;"><i class="fa-solid fa-user-minus"></i></div>
+      <div>
+        <div class="hms-card-title">Delete Staff Account</div>
+        <div class="hms-card-sub">This will permanently remove this staff member</div>
+      </div>
+    </div>
+    <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+      <div style="font-weight:600;">{{ staff_user.full_name|default:staff_user.email }}</div>
+      <div style="color:var(--hms-muted);font-size:.83rem;">{{ staff_user.email }}</div>
+      <div style="margin-top:.3rem;"><span class="hms-badge badge-{{ staff_user.role }}">{{ staff_user.role|title }}</span></div>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'dashboard:staff-list' %}" class="btn-hms btn-hms-ghost" style="flex:1;justify-content:center;">Cancel</a>
+        <button type="submit" class="btn-hms btn-hms-danger" style="flex:1;justify-content:center;">
+          <i class="fa-solid fa-trash"></i> Delete Staff
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

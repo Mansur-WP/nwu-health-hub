@@ -1,0 +1,54 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Approve Appointment{% endblock %}
+{% block topbar_title %}Approve Appointment{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Doctor Portal</div>
+<a href="{% url 'doctors:doctor-appointments' %}"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:520px;margin:0 auto;">
+  <a href="{% url 'doctors:doctor-appointments' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Appointments
+  </a>
+
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(34,197,94,.15);color:#22c55e;"><i class="fa-solid fa-circle-check"></i></div>
+      <div>
+        <div class="hms-card-title">Approve Appointment</div>
+        <div class="hms-card-sub">Confirm to approve this appointment</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,255,255,.04);border:1px solid var(--hms-border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;">
+      <div class="d-flex gap-3 align-items-start">
+        <div style="width:42px;height:42px;border-radius:50%;background:rgba(79,110,247,.15);display:flex;align-items:center;justify-content:center;color:#4f6ef7;flex-shrink:0;">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div>
+          <div style="font-weight:600;">{{ appointment.patient.user.full_name|default:appointment.patient.user.email }}</div>
+          <div style="font-size:.78rem;color:var(--hms-muted);">{{ appointment.patient.user.email }}</div>
+          <div style="margin-top:.5rem;font-size:.83rem;">
+            <i class="fa-solid fa-calendar me-1" style="color:var(--hms-muted);"></i>
+            {{ appointment.scheduled_at|date:"l, F d, Y — H:i" }}
+          </div>
+          {% if appointment.notes %}
+          <div style="margin-top:.4rem;font-size:.83rem;color:var(--hms-muted);">
+            <i class="fa-solid fa-note-sticky me-1"></i>{{ appointment.notes }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn-hms btn-hms-success" style="width:100%;justify-content:center;padding:.75rem;">
+        <i class="fa-solid fa-circle-check"></i> Confirm Approval
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}My Appointments{% endblock %}
+{% block topbar_title %}My Appointments{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Patient Portal</div>
+<a href="{% url 'patients:patient-profile' %}"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+<a href="{% url 'patients:patient-appointments' %}" class="active"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+<a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescriptions</a>
+<a href="{% url 'patients:patient-payments' %}"><i class="fa-solid fa-money-bill-wave"></i> Payments</a>
+{% endblock %}
+
+{% block page_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">My Appointments</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">All your scheduled and past visits</p>
+  </div>
+  <a href="{% url 'patients:patient-book-appointment' %}" class="btn-hms btn-hms-primary">
+    <i class="fa-solid fa-calendar-plus"></i> Book Appointment
+  </a>
+</div>
+
+<div class="hms-card">
+  {% if appointments %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>Doctor</th>
+          <th>Date & Time</th>
+          <th>Status</th>
+          <th>Payment</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in appointments %}
+        <tr>
+          <td>
+            <div style="font-weight:600;">Dr. {{ appt.doctor.user.last_name }}</div>
+            <div style="font-size:.75rem;color:var(--hms-muted);">{{ appt.doctor.specialization|default:"General" }}</div>
+          </td>
+          <td>
+            <div>{{ appt.scheduled_at|date:"M d, Y" }}</div>
+            <div style="font-size:.75rem;color:var(--hms-muted);">{{ appt.scheduled_at|time:"H:i" }}</div>
+          </td>
+          <td>
+            {% if appt.status == 'pending' %}<span class="hms-badge badge-pending">Pending</span>
+            {% elif appt.status == 'approved' %}<span class="hms-badge badge-completed">Approved</span>
+            {% elif appt.status == 'cancelled' %}<span class="hms-badge badge-cancelled">Cancelled</span>
+            {% else %}<span class="hms-badge badge-draft">{{ appt.get_status_display }}</span>{% endif %}
+          </td>
+          <td>
+            {% if appt.is_paid %}
+              <span class="hms-badge badge-paid">✓ Paid</span>
+            {% elif appt.payment_obj %}
+              <span class="hms-badge badge-pending">⏳ Unpaid</span>
+            {% else %}
+              <span style="color:var(--hms-muted);font-size:.8rem;">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1 flex-wrap">
+              {% if appt.status == 'pending' %}
+              <a href="{% url 'patients:patient-appointment-cancel' appt.id %}" class="btn-hms btn-hms-danger btn-hms-sm">
+                <i class="fa-solid fa-xmark"></i> Cancel
+              </a>
+              {% endif %}
+              {% if appt.payment_obj and not appt.is_paid and appt.status != 'cancelled' %}
+              <a href="{% url 'payments:payment-checkout' appt.payment_obj.pk %}" class="btn-hms btn-hms-success btn-hms-sm">
+                <i class="fa-solid fa-credit-card"></i> Pay Now
+              </a>
+              {% endif %}
+              {% if appt.is_paid and appt.payment_obj %}
+              <a href="{% url 'payments:payment-receipt' appt.payment_obj.pk %}" class="btn-hms btn-hms-ghost btn-hms-sm">
+                <i class="fa-solid fa-receipt"></i> Receipt
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty">
+    <i class="fa-solid fa-calendar-xmark"></i>
+    <p>No appointments yet. <a href="{% url 'patients:patient-book-appointment' %}" style="color:#4f6ef7;">Book your first appointment.</a></p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Prescription{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <h1 class="h3 mb-3">Send Prescription</h1>
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form method="post" class="row g-3">
+            {% csrf_token %}
+
+            <div class="col-12">
+              <label class="form-label" for="id_medicine">Medicine</label>
+              {{ form.medicine }}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label" for="id_dosage">Dosage</label>
+              {{ form.dosage }}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label" for="id_instructions">Instructions</label>
+              {{ form.instructions }}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label" for="id_date">Date</label>
+              {{ form.date }}
+            </div>
+
+            <div class="col-12">
+              <button class="btn btn-primary w-100" type="submit">
+                Submit Prescription
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+      <p class="text-muted small mt-3 mb-0">
+        Note: patient is auto-selected from the system (patient role).
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

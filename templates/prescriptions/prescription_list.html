@@ -1,0 +1,88 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Prescription Queue{% endblock %}
+{% block topbar_title %}Prescription Queue{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Pharmacist Portal</div>
+<a href="{% url 'prescriptions:prescription-list' %}" class="active"><i class="fa-solid fa-notes-medical"></i> Prescription Queue</a>
+<a href="{% url 'pharmacists:inventory-list' %}"><i class="fa-solid fa-box-archive"></i> Inventory</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .queue-tabs { display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem; }
+  .queue-tab { padding:.4rem .9rem;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--hms-border);color:var(--hms-muted);background:rgba(255,255,255,.03);transition:all .15s;text-decoration:none; }
+  .queue-tab:hover,.queue-tab.active { background:rgba(79,110,247,.15);border-color:rgba(79,110,247,.4);color:#4f6ef7; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Prescription Queue</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">Dispense pending prescriptions</p>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="queue-tabs">
+  <a href="?status=" class="queue-tab {% if not request.GET.status %}active{% endif %}">All</a>
+  <a href="?status=pending" class="queue-tab {% if request.GET.status == 'pending' %}active{% endif %}"><i class="fa-solid fa-clock me-1"></i>Pending</a>
+  <a href="?status=dispensed" class="queue-tab {% if request.GET.status == 'dispensed' %}active{% endif %}"><i class="fa-solid fa-circle-check me-1"></i>Dispensed</a>
+  <a href="?status=draft" class="queue-tab {% if request.GET.status == 'draft' %}active{% endif %}"><i class="fa-solid fa-pen me-1"></i>Draft</a>
+</div>
+
+<div class="hms-card">
+  {% if prescriptions %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Medicine</th>
+          <th>Dosage</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in prescriptions %}
+        {% if not request.GET.status or p.status == request.GET.status %}
+        <tr>
+          <td>
+            <div style="font-weight:600;">{{ p.patient.user.full_name|default:p.patient.user.email }}</div>
+          </td>
+          <td>Dr. {{ p.doctor.user.last_name }}</td>
+          <td style="font-weight:500;">{{ p.medicine }}</td>
+          <td style="color:var(--hms-muted);font-size:.83rem;">{{ p.dosage }}</td>
+          <td style="font-size:.83rem;color:var(--hms-muted);">{{ p.date|date:"M d, Y" }}</td>
+          <td>
+            {% if p.status == 'draft' %}<span class="hms-badge badge-draft">Draft</span>
+            {% elif p.status == 'pending' %}<span class="hms-badge badge-pending">Pending</span>
+            {% else %}<span class="hms-badge badge-dispensed">Dispensed</span>{% endif %}
+          </td>
+          <td>
+            {% if p.status == 'pending' %}
+            <a href="{% url 'prescriptions:prescription-dispense' p.pk %}" class="btn-hms btn-hms-success btn-hms-sm">
+              <i class="fa-solid fa-capsules"></i> Dispense
+            </a>
+            {% else %}
+            <span style="color:var(--hms-muted);font-size:.8rem;">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty">
+    <i class="fa-solid fa-prescription-bottle"></i>
+    <p>No prescriptions in queue.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Receipt #{{ payment.pk }}{% endblock %}
+{% block topbar_title %}Payment Receipt{% endblock %}
+
+{% block extra_head %}
+<style>
+  @media print {
+    #hms-sidebar, #hms-topbar, .d-print-none, .btn-hms { display: none !important; }
+    #hms-main { margin-left: 0 !important; padding: 0 !important; }
+    .hms-page { padding: 0 !important; }
+    .hms-card { border: none !important; background: #fff !important; color: #000 !important; }
+    .text-muted, .hms-card-sub { color: #555 !important; }
+    .hms-table th { background: #f8f9fa !important; color: #000 !important; border-bottom: 2px solid #000 !important; }
+    .hms-table td { border-bottom: 1px solid #ddd !important; }
+  }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:800px;margin:0 auto;">
+  <div class="d-flex justify-content-between mb-4 d-print-none gap-2 flex-wrap">
+    {% if request.user.role == 'patient' %}
+      <a href="{% url 'patients:patient-payments' %}" class="btn-hms btn-hms-ghost btn-hms-sm">
+        <i class="fa-solid fa-arrow-left"></i> Back to Payments
+      </a>
+    {% else %}
+      <a href="{% url 'payments:payment-list' %}" class="btn-hms btn-hms-ghost btn-hms-sm">
+        <i class="fa-solid fa-arrow-left"></i> Back to Ledger
+      </a>
+    {% endif %}
+    <button class="btn-hms btn-hms-primary btn-hms-sm" onclick="window.print()">
+      <i class="fa-solid fa-print"></i> Print Receipt
+    </button>
+  </div>
+
+  <div class="hms-card" style="padding:3rem 2.5rem;">
+    <div class="row mb-5 align-items-start">
+      <div class="col-sm-6">
+<h2 style="font-size:1.5rem;font-weight:700;margin:0;color:var(--hms-primary);">
+          <i class="fa-solid fa-heart-pulse"></i> NWU HealthHub
+        </h2>
+        <div style="color:var(--hms-muted);font-size:.83rem;margin-top:.5rem;">
+          123 Health Street<br>
+          Wellness City, HC 12345
+        </div>
+      </div>
+      <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
+        <h1 style="font-size:1.75rem;font-weight:700;margin:0;color:var(--hms-muted);">RECEIPT</h1>
+        <div style="font-weight:600;font-size:.875rem;margin-top:.4rem;">Invoice #{{ payment.pk }}</div>
+        <div style="color:var(--hms-muted);font-size:.83rem;margin-top:.2rem;">Date: {{ payment.paid_at|date:"M d, Y" }}</div>
+      </div>
+    </div>
+    
+    <div class="mb-5">
+      <h5 style="font-size:.83rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--hms-border);padding-bottom:.5rem;margin-bottom:.75rem;">Patient Details</h5>
+      <div style="font-weight:600;">{{ payment.patient.user.full_name|default:payment.patient.user.email }}</div>
+      <div style="font-size:.83rem;color:var(--hms-muted);">{{ payment.patient.user.email }}</div>
+    </div>
+
+    <table class="hms-table mb-5">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="text-end">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div style="font-weight:600;">Medical Consultation with Dr. {{ payment.appointment.doctor.user.last_name }}</div>
+            <div style="font-size:.78rem;color:var(--hms-muted);margin-top:.2rem;">Appointment on {{ payment.appointment.scheduled_at|date:"M d, Y \a\t H:i" }}</div>
+          </td>
+          <td class="text-end" style="font-weight:600;">£{{ payment.amount }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="d-flex justify-content-between align-items-center" style="border-top:1px solid var(--hms-border);padding-top:1.5rem;">
+      <div style="font-weight:600;font-size:.9rem;">Payment Status:</div>
+      <div style="font-size:1.25rem;font-weight:700;color:#22c55e;">Total Paid: £{{ payment.amount }}</div>
+    </div>
+
+    <div class="text-center text-muted mt-5" style="font-size:.8rem;border-top:1px solid var(--hms-border);padding-top:2rem;">
+Thank you for choosing NWU HealthHub Hospital. For billing support, contact billing@healthhub.nwu.com.
+    </div>
+  </div>
+</div>
+{% endblock %}

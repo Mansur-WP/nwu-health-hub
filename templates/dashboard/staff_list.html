@@ -1,0 +1,154 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Manage Staff{% endblock %}
+{% block topbar_title %}Manage Staff{% endblock %}
+
+{% block page_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Staff Members</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">View and manage all staff accounts</p>
+  </div>
+  <a href="{% url 'dashboard:staff-add' %}" class="btn-hms btn-hms-primary">
+    <i class="fa-solid fa-plus"></i> Add Staff
+  </a>
+</div>
+
+{% if messages %}
+  {% for msg in messages %}
+  <div style="padding:.75rem 1rem;border-radius:10px;margin-bottom:1rem;font-size:.875rem;font-weight:500;
+    {% if msg.tags == 'success' %}background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#4ade80;
+    {% elif msg.tags == 'warning' %}background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:#fbbf24;
+    {% elif msg.tags == 'error' %}background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;
+    {% else %}background:rgba(79,110,247,.12);border:1px solid rgba(79,110,247,.3);color:#818cf8;{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+{% endif %}
+
+<div class="hms-card">
+  <div class="hms-card-header">
+    <div class="hms-card-icon" style="background:rgba(168,85,247,.15);color:#c084fc;"><i class="fa-solid fa-user-tie"></i></div>
+    <div>
+      <div class="hms-card-title">All Staff</div>
+      <div class="hms-card-sub">{{ staff_profiles|length }} member{{ staff_profiles|length|pluralize }}</div>
+    </div>
+  </div>
+
+  {% if staff_profiles %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Joined</th>
+          <th>Account</th>
+          <th>Approval</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for profile in staff_profiles %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:.75rem;">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;">
+                {{ profile.user.first_name|first|upper|default:"?" }}{{ profile.user.last_name|first|upper }}
+              </div>
+              <div>
+                <div style="font-weight:600;">{{ profile.user.full_name|default:"—" }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="color:var(--hms-muted);">{{ profile.user.email }}</td>
+          <td><span class="hms-badge badge-{{ profile.user.role }}">{{ profile.user.role|title }}</span></td>
+          <td style="color:var(--hms-muted);font-size:.83rem;">{{ profile.user.date_joined|date:"M d, Y" }}</td>
+
+          {# Account active/inactive status #}
+          <td>
+            {% if profile.user.is_active %}
+              <span class="hms-badge badge-completed">Active</span>
+            {% else %}
+              <span class="hms-badge badge-cancelled">Inactive</span>
+            {% endif %}
+          </td>
+
+          {# Approval status badge #}
+          <td>
+            {% if profile.approval_status == "approved" %}
+              <span class="hms-badge" style="background:rgba(34,197,94,.15);color:#4ade80;display:inline-flex;align-items:center;gap:.35rem;">
+                <i class="fa-solid fa-circle-check" style="font-size:.7rem;"></i> Approved
+              </span>
+            {% elif profile.approval_status == "rejected" %}
+              <span class="hms-badge" style="background:rgba(239,68,68,.15);color:#f87171;display:inline-flex;align-items:center;gap:.35rem;">
+                <i class="fa-solid fa-circle-xmark" style="font-size:.7rem;"></i> Rejected
+              </span>
+            {% else %}
+              <span class="hms-badge" style="background:rgba(251,191,36,.15);color:#fbbf24;display:inline-flex;align-items:center;gap:.35rem;">
+                <i class="fa-solid fa-hourglass-half" style="font-size:.7rem;"></i> Pending
+              </span>
+            {% endif %}
+          </td>
+
+          {# Action buttons #}
+          <td style="text-align:right;">
+            <div style="display:inline-flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;">
+
+              {% if profile.approval_status != "approved" %}
+              <form method="post" action="{% url 'dashboard:staff-approve' profile.user.id %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="btn-hms btn-hms-sm"
+                  style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);cursor:pointer;"
+                  title="Approve this staff member">
+                  <i class="fa-solid fa-check"></i> Approve
+                </button>
+              </form>
+              {% endif %}
+
+              {% if profile.approval_status == "approved" %}
+              <form method="post" action="{% url 'dashboard:staff-approve' profile.user.id %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="pending">
+                <button type="submit" class="btn-hms btn-hms-sm"
+                  style="background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3);cursor:pointer;"
+                  title="Revoke approval">
+                  <i class="fa-solid fa-rotate-left"></i> Revoke
+                </button>
+              </form>
+              {% endif %}
+
+              {% if profile.approval_status != "rejected" %}
+              <form method="post" action="{% url 'dashboard:staff-approve' profile.user.id %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reject">
+                <button type="submit" class="btn-hms btn-hms-sm"
+                  style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.3);cursor:pointer;"
+                  title="Reject this staff member">
+                  <i class="fa-solid fa-xmark"></i> Reject
+                </button>
+              </form>
+              {% endif %}
+
+              <a href="{% url 'dashboard:staff-delete' profile.user.id %}" class="btn-hms btn-hms-danger btn-hms-sm">
+                <i class="fa-solid fa-trash"></i> Delete
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty">
+    <i class="fa-solid fa-user-tie"></i>
+    <p>No staff members found.</p>
+    <a href="{% url 'dashboard:staff-add' %}" class="btn-hms btn-hms-primary mt-3" style="display:inline-flex;">
+      <i class="fa-solid fa-plus"></i> Add First Staff Member
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

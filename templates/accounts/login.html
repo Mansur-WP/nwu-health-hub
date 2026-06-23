@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+
+{% block extra_head %}
+<style>
+  body { background: #0f1117; }
+  .auth-wrap {
+    min-height: 100vh; display: flex; align-items: stretch;
+  }
+  .auth-left {
+    flex: 1; display: none;
+    background: linear-gradient(145deg, #1a2250 0%, #0f1117 60%, #1a0f35 100%);
+    align-items: center; justify-content: center; flex-direction: column;
+    padding: 3rem; position: relative; overflow: hidden;
+  }
+  @media(min-width:900px){ .auth-left { display:flex; } }
+  .auth-left::before {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(79,110,247,.25) 0%, transparent 65%),
+                radial-gradient(ellipse at 70% 20%, rgba(168,85,247,.2) 0%, transparent 55%);
+  }
+  .auth-left-content { position:relative; z-index:1; text-align:center; max-width:380px; }
+  .auth-left-icon {
+    width:80px; height:80px; border-radius:20px;
+    background: rgba(79,110,247,.2); border: 1px solid rgba(79,110,247,.4);
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:2rem; color:#4f6ef7; margin-bottom:1.5rem;
+  }
+  .auth-left h2 { font-size:1.75rem; font-weight:700; color:#e2e8f0; margin-bottom:.75rem; }
+  .auth-left p { color:#94a3b8; font-size:.9rem; line-height:1.7; }
+  .auth-feature { display:flex; align-items:center; gap:.75rem; text-align:left; margin-top:1.5rem; padding:.75rem 1rem; background:rgba(255,255,255,.04); border-radius:10px; border:1px solid rgba(255,255,255,.07); }
+  .auth-feature i { color:#4f6ef7; font-size:1rem; flex-shrink:0; }
+  .auth-feature span { color:#cbd5e1; font-size:.83rem; font-weight:500; }
+
+  .auth-right {
+    width:100%; max-width:480px; background:#0f1117;
+    display:flex; align-items:center; justify-content:center;
+    padding:2.5rem 2rem;
+  }
+  @media(min-width:900px){ .auth-right { width:480px; flex-shrink:0; } }
+  .auth-form-box { width:100%; }
+  .auth-logo { display:flex; align-items:center; gap:.6rem; margin-bottom:2rem; }
+  .auth-logo-icon { width:38px;height:38px;border-radius:10px;background:#4f6ef7;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem; }
+  .auth-logo-name { font-weight:700; font-size:1.1rem; color:#e2e8f0; }
+  .auth-title { font-size:1.5rem; font-weight:700; margin-bottom:.3rem; color:#f1f5f9; }
+  .auth-subtitle { color:#94a3b8; font-size:.875rem; margin-bottom:1.75rem; }
+
+  .form-field { margin-bottom:1rem; }
+  .form-field label { display:block; font-size:.75rem; font-weight:600; color:#94a3b8; margin-bottom:.4rem; text-transform:uppercase; letter-spacing:.05em; }
+  .form-field .input-wrap { position:relative; }
+  .form-field .input-wrap i { position:absolute; left:.9rem; top:50%; transform:translateY(-50%); color:#4f6ef7; font-size:.85rem; }
+  .form-field input {
+    width:100%; padding:.7rem 1rem .7rem 2.5rem;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);
+    border-radius:10px; color:#e2e8f0; font-family:'Inter',sans-serif; font-size:.875rem;
+    outline:none; transition: border-color .15s, box-shadow .15s;
+  }
+  .form-field input:focus { border-color:#4f6ef7; box-shadow: 0 0 0 3px rgba(79,110,247,.2); }
+  .form-error { color:#ef4444; font-size:.75rem; margin-top:.3rem; }
+
+  .btn-auth {
+    width:100%; padding:.75rem; border-radius:10px; border:none;
+    background:#4f6ef7; color:#fff; font-family:'Inter',sans-serif;
+    font-size:.9rem; font-weight:600; cursor:pointer; margin-top:.5rem;
+    transition:background .15s, transform .1s;
+  }
+  .btn-auth:hover { background:#3a57e8; }
+  .btn-auth:active { transform:scale(.98); }
+  .auth-alt { text-align:center; margin-top:1.25rem; color:#94a3b8; font-size:.83rem; }
+  .auth-alt a { color:#4f6ef7; font-weight:600; text-decoration:none; }
+  .auth-alt a:hover { text-decoration:underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <!-- Left panel -->
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <div class="auth-left-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+      <h2>Welcome back to NWU HealthHub</h2>
+      <p>Your smart campus healthcare platform. Manage appointments, prescriptions, payments, and patient care all in one place.</p>
+      <div class="auth-feature"><i class="fa-solid fa-calendar-check"></i><span>Book & manage appointments instantly</span></div>
+      <div class="auth-feature mt-2"><i class="fa-solid fa-notes-medical"></i><span>Prescriptions sent directly to pharmacy</span></div>
+      <div class="auth-feature mt-2"><i class="fa-solid fa-shield-halved"></i><span>Role-based secure access</span></div>
+    </div>
+  </div>
+
+  <!-- Right form -->
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <div class="auth-logo">
+        <div class="auth-logo-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+        <span class="auth-logo-name">NWU HealthHub</span>
+      </div>
+      <h1 class="auth-title">Sign in to your account</h1>
+      <p class="auth-subtitle">Enter your credentials to continue</p>
+
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="form-error mb-3" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:.7rem 1rem;border-radius:8px;font-size:.83rem;">
+            <i class="fa-solid fa-circle-xmark me-1"></i>{{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" id="loginForm">
+        {% csrf_token %}
+        <div class="form-field">
+          <label>Email address</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope"></i>
+            <input type="email" name="email" id="id_email" placeholder="you@example.com" required autofocus value="{{ request.POST.email }}">
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" name="password" id="id_password" placeholder="••••••••" required>
+          </div>
+        </div>
+        <button type="submit" class="btn-auth">
+          <i class="fa-solid fa-right-to-bracket me-1"></i> Sign In
+        </button>
+      </form>
+
+      <div class="auth-alt">
+        Don't have an account? <a href="{% url 'accounts:register' %}">Register here</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

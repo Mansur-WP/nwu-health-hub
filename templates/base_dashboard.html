@@ -1,0 +1,420 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}HMS{% endblock %} — Hospital Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
+  <style>
+    :root {
+      --hms-bg:        #f8fafc;
+      --hms-sidebar:   #ffffff;
+      --hms-card:      #ffffff;
+      --hms-card2:     #f1f5f9;
+      --hms-border:    #e2e8f0;
+      --hms-primary:   #005c2e;
+      --hms-primary-h: #004422;
+      --hms-success:   #16a34a;
+      --hms-warning:   #d97706;
+      --hms-danger:    #dc2626;
+      --hms-text:      #0f172a;
+      --hms-muted:     #475569;
+      --sidebar-w:     240px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background: var(--hms-bg); color: var(--hms-text); }
+
+    /* ── Sidebar ── */
+    #hms-sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--hms-sidebar);
+      border-right: 1px solid var(--hms-border);
+      display: flex; flex-direction: column;
+      z-index: 1040;
+      transition: transform .25s ease;
+    }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: .75rem;
+      padding: 1.25rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--hms-border);
+      text-decoration: none;
+    }
+    .sidebar-brand .brand-text { font-weight: 700; font-size: 1.15rem; color: var(--hms-text); letter-spacing: -0.01em; }
+    .sidebar-brand .brand-sub  { font-size: .68rem; color: var(--hms-muted); }
+
+    .sidebar-section { padding: .6rem 1rem .25rem; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--hms-muted); }
+
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: .5rem 0; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .6rem 1.25rem;
+      color: var(--hms-muted);
+      text-decoration: none; font-size: .875rem; font-weight: 500;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      border-radius: 0 8px 8px 0;
+      margin: 1px .5rem 1px 0;
+    }
+    .sidebar-nav a:hover { color: var(--hms-primary); background: #f1f5f9; border-left-color: var(--hms-primary); }
+    .sidebar-nav a.active { color: var(--hms-primary); background: rgba(0, 92, 46, 0.08); border-left-color: var(--hms-primary); font-weight: 600; }
+    .sidebar-nav a i { width: 18px; text-align: center; font-size: .9rem; }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--hms-border);
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .sidebar-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--hms-primary), #004422);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700; color: #fff; flex-shrink: 0;
+    }
+    .sidebar-user-name { font-size: .8rem; font-weight: 600; color: var(--hms-text); }
+    .sidebar-user-role { font-size: .7rem; color: var(--hms-muted); text-transform: capitalize; }
+    .sidebar-logout {
+      margin-left: auto; color: var(--hms-muted); font-size: .85rem;
+      text-decoration: none; transition: color .15s;
+    }
+    .sidebar-logout:hover { color: var(--hms-danger); }
+
+    /* ── Main shell ── */
+    #hms-main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ── Topbar ── */
+    #hms-topbar {
+      height: 60px; padding: 0 1.5rem;
+      background: var(--hms-sidebar);
+      border-bottom: 1px solid var(--hms-border);
+      display: flex; align-items: center; gap: 1rem;
+      position: sticky; top: 0; z-index: 1030;
+    }
+    .topbar-toggle { display: none; background: none; border: none; color: var(--hms-muted); font-size: 1.2rem; cursor: pointer; }
+    .topbar-title { font-weight: 600; font-size: 1rem; color: var(--hms-text); }
+    .topbar-spacer { flex: 1; }
+    .topbar-badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .3rem .75rem; border-radius: 99px;
+      font-size: .72rem; font-weight: 600;
+      background: rgba(0, 92, 46, 0.08); color: var(--hms-primary);
+      border: 1px solid rgba(0, 92, 46, 0.2);
+    }
+
+    /* ── Page body ── */
+    .hms-page { flex: 1; padding: 1.75rem; }
+
+    /* ── Cards ── */
+    .hms-card {
+      background: var(--hms-card);
+      border: 1px solid var(--hms-border);
+      border-radius: 14px; padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(15,23,42,.04);
+    }
+    .hms-card-header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem; }
+    .hms-card-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .hms-card-title { font-size: 1rem; font-weight: 600; margin: 0; }
+    .hms-card-sub { font-size: .78rem; color: var(--hms-muted); }
+
+    /* ── Stat tiles ── */
+    .stat-tile {
+      background: var(--hms-card);
+      border: 1px solid var(--hms-border);
+      border-radius: 14px; padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 1px 3px rgba(15,23,42,.04);
+    }
+    .stat-tile:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15,23,42,.06); }
+    .stat-tile-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; flex-shrink: 0;
+    }
+    .stat-tile-val { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+    .stat-tile-lbl { font-size: .78rem; color: var(--hms-muted); margin-top: .2rem; }
+
+    /* ── Tables ── */
+    .hms-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    .hms-table th {
+      padding: .75rem 1rem; font-size: .72rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--hms-muted); border-bottom: 1px solid var(--hms-border);
+      background: #f8fafc;
+    }
+    .hms-table td {
+      padding: .85rem 1rem; font-size: .875rem;
+      border-bottom: 1px solid var(--hms-border); vertical-align: middle;
+    }
+    .hms-table tr:last-child td { border-bottom: none; }
+    .hms-table tbody tr { transition: background .12s; }
+    .hms-table tbody tr:hover { background: #f8fafc; }
+
+    /* ── Badges ── */
+    .hms-badge {
+      display: inline-flex; align-items: center; gap: .3rem;
+      padding: .25rem .65rem; border-radius: 99px;
+      font-size: .72rem; font-weight: 600;
+    }
+    .hms-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .badge-pending   { background: #fffbeb; color: var(--hms-warning); }
+    .badge-completed { background: #f0fdf4; color: var(--hms-success); }
+    .badge-cancelled { background: #fef2f2; color: var(--hms-danger); }
+    .badge-draft     { background: #f1f5f9; color: var(--hms-muted); }
+    .badge-dispensed { background: #f0fdf4; color: var(--hms-success); }
+    .badge-paid      { background: #f0fdf4; color: var(--hms-success); }
+    .badge-refunded  { background: #fef2f2; color: var(--hms-danger); }
+    .badge-admin     { background: rgba(0, 92, 46, 0.08); color: var(--hms-primary); }
+    .badge-doctor    { background: #f0fdf4; color: var(--hms-success); }
+    .badge-patient   { background: #fffbeb; color: var(--hms-warning); }
+    .badge-pharmacist{ background: #f3e8ff; color: #a855f7; }
+
+    /* ── Buttons ── */
+    .btn-hms {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .5rem 1.1rem; border-radius: 8px;
+      font-size: .8rem; font-weight: 600; border: none; cursor: pointer;
+      transition: all .15s; text-decoration: none;
+    }
+    .btn-hms-primary { background: var(--hms-primary); color: #fff; }
+    .btn-hms-primary:hover { background: var(--hms-primary-h); color: #fff; }
+    .btn-hms-success { background: #f0fdf4; color: var(--hms-success); border: 1px solid #bbf7d0; }
+    .btn-hms-success:hover { background: var(--hms-success); color: #fff; }
+    .btn-hms-danger  { background: #fef2f2; color: var(--hms-danger); border: 1px solid #fecaca; }
+    .btn-hms-danger:hover  { background: var(--hms-danger); color: #fff; }
+    .btn-hms-ghost   { background: #ffffff; color: var(--hms-muted); border: 1px solid var(--hms-border); }
+    .btn-hms-ghost:hover   { background: #f1f5f9; color: var(--hms-text); }
+    .btn-hms-sm { padding: .35rem .75rem; font-size: .75rem; }
+
+    /* ── Forms ── */
+    .hms-form-group { margin-bottom: 1.1rem; }
+    .hms-form-group label { display: block; font-size: .78rem; font-weight: 600; color: var(--hms-muted); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .05em; }
+    .hms-form-group input,
+    .hms-form-group select,
+    .hms-form-group textarea {
+      width: 100%; padding: .65rem 1rem;
+      background: #ffffff;
+      border: 1px solid var(--hms-border);
+      border-radius: 9px; color: var(--hms-text);
+      font-family: 'Inter', sans-serif; font-size: .875rem;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    .hms-form-group input:focus,
+    .hms-form-group select:focus,
+    .hms-form-group textarea:focus {
+      border-color: var(--hms-primary);
+      box-shadow: 0 0 0 3px rgba(0, 92, 46, .15);
+    }
+    .hms-form-group select option { background: var(--hms-card); }
+    .hms-form-group textarea { resize: vertical; min-height: 90px; }
+    .hms-form-error { color: var(--hms-danger); font-size: .78rem; margin-top: .3rem; }
+
+    /* ── Alerts / Toasts ── */
+    .hms-alerts { position: fixed; top: 70px; right: 1.25rem; z-index: 9999; display: flex; flex-direction: column; gap: .5rem; max-width: 340px; }
+    .hms-alert {
+      padding: .85rem 1.25rem; border-radius: 10px;
+      font-size: .83rem; font-weight: 500;
+      display: flex; align-items: center; gap: .6rem;
+      animation: slideIn .25s ease;
+      box-shadow: 0 4px 12px rgba(15,23,42,.08);
+    }
+    @keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+    .hms-alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: var(--hms-success); }
+    .hms-alert-error   { background: #fef2f2; border: 1px solid #fecaca; color: var(--hms-danger); }
+    .hms-alert-info    { background: #eff6ff; border: 1px solid #bfdbfe; color: var(--hms-primary); }
+    .hms-alert-warning { background: #fffbeb; border: 1px solid #fef3c7; color: var(--hms-warning); }
+    .page-header { margin-bottom: 1.75rem; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 .25rem; }
+    .page-header p { color: var(--hms-muted); font-size: .875rem; margin: 0; }
+    .page-header-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+    /* ── Empty state ── */
+    .hms-empty { text-align: center; padding: 3rem 1rem; color: var(--hms-muted); }
+    .hms-empty i { font-size: 2.5rem; margin-bottom: 1rem; opacity: .4; display: block; }
+    .hms-empty p { margin: 0; font-size: .875rem; }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      #hms-sidebar { transform: translateX(-100%); }
+      #hms-sidebar.open { transform: translateX(0); }
+      #hms-main { margin-left: 0; }
+      .topbar-toggle { display: block; }
+      .hms-page { padding: 1rem; }
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 1039;
+    }
+    .sidebar-overlay.open { display: block; }
+    /* ── Global Django widget override ── */
+    input[type="text"], input[type="email"], input[type="password"],
+    input[type="number"], input[type="date"], input[type="datetime-local"],
+    input[type="tel"], select, textarea {
+      background: rgba(255,255,255,.05) !important;
+      border: 1px solid var(--hms-border) !important;
+      border-radius: 9px !important;
+      color: var(--hms-text) !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: .875rem !important;
+      padding: .65rem 1rem !important;
+      width: 100% !important;
+      outline: none !important;
+      transition: border-color .15s, box-shadow .15s !important;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--hms-primary) !important;
+      box-shadow: 0 0 0 3px rgba(79,110,247,.2) !important;
+    }
+    select option { background: #1e2540; }
+    textarea { resize: vertical; min-height: 80px; }
+    /* Bootstrap form-control override */
+    .form-control, .form-select {
+      background: rgba(255,255,255,.05) !important;
+      border: 1px solid var(--hms-border) !important;
+      color: var(--hms-text) !important;
+      border-radius: 9px !important;
+    }
+    .form-control:focus, .form-select:focus {
+      background: rgba(255,255,255,.07) !important;
+      border-color: var(--hms-primary) !important;
+      box-shadow: 0 0 0 3px rgba(79,110,247,.2) !important;
+      color: var(--hms-text) !important;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside id="hms-sidebar">
+  {% if request.user.role == 'admin' %}
+    <a class="sidebar-brand" href="{% url 'dashboard:dashboard-home' %}">
+  {% elif request.user.role == 'patient' %}
+    <a class="sidebar-brand" href="{% url 'patients:patient-profile' %}">
+  {% elif request.user.role == 'doctor' %}
+    <a class="sidebar-brand" href="{% url 'doctors:doctor-appointments' %}">
+  {% elif request.user.role == 'pharmacist' %}
+    <a class="sidebar-brand" href="{% url 'pharmacists:pharmacist-list' %}">
+  {% else %}
+    <a class="sidebar-brand" href="#">
+  {% endif %}
+    <div style="display:flex;align-items:center;height:46px;width:100%;justify-content:center;padding:0.25rem 0;">
+      <img src="{% static 'images/nwu_logo.png' %}" alt="NWU HealthHub" style="height:42px;max-width:100%;object-fit:contain;">
+    </div>
+  </a>
+
+  <nav class="sidebar-nav">
+    {% block sidebar_nav %}
+      {% if request.user.role == 'admin' %}
+        <div class="sidebar-section">Overview</div>
+        <a href="{% url 'dashboard:dashboard-home' %}"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+        <div class="sidebar-section">Management</div>
+        <a href="{% url 'dashboard:doctor-list' %}"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+        <a href="{% url 'dashboard:staff-list' %}"><i class="fa-solid fa-user-tie"></i> Manage Staff</a>
+        <a href="{% url 'dashboard:patient-list' %}"><i class="fa-solid fa-hospital-user"></i> Manage Patients</a>
+        <a href="{% url 'dashboard:doctor-add' %}"><i class="fa-solid fa-plus"></i> Add Doctor</a>
+        <a href="{% url 'dashboard:staff-add' %}"><i class="fa-solid fa-user-plus"></i> Add Staff</a>
+        <a href="{% url 'dashboard:payments-verify' %}"><i class="fa-solid fa-circle-check"></i> Verify Payments</a>
+        <a href="{% url 'payments:payment-list' %}"><i class="fa-solid fa-money-bill-wave"></i> Payment Ledger</a>
+      {% elif request.user.role == 'doctor' %}
+        <div class="sidebar-section">Doctor Portal</div>
+        <a href="{% url 'doctors:doctor-appointments' %}"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+      {% elif request.user.role == 'patient' %}
+        <div class="sidebar-section">Patient Portal</div>
+        <a href="{% url 'patients:patient-profile' %}"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+        <a href="{% url 'patients:patient-appointments' %}"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+        <a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescriptions</a>
+        <a href="{% url 'patients:patient-payments' %}"><i class="fa-solid fa-money-bill-wave"></i> Payments</a>
+      {% elif request.user.role == 'pharmacist' %}
+        <div class="sidebar-section">Pharmacist Portal</div>
+        <a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescription Queue</a>
+        <a href="{% url 'pharmacists:inventory-list' %}"><i class="fa-solid fa-box-archive"></i> Inventory</a>
+      {% endif %}
+
+    {% endblock %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-avatar">
+      {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+    </div>
+    <div>
+      <div class="sidebar-user-name">{{ request.user.full_name|default:request.user.email }}</div>
+      <div class="sidebar-user-role">{{ request.user.role }}</div>
+    </div>
+    <a class="sidebar-logout" href="{% url 'accounts:logout' %}" title="Logout">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    </a>
+  </div>
+</aside>
+
+<!-- Main -->
+<div id="hms-main">
+  <!-- Topbar -->
+  <header id="hms-topbar">
+    <button class="topbar-toggle" onclick="openSidebar()"><i class="fa-solid fa-bars"></i></button>
+    <span class="topbar-title">{% block topbar_title %}Dashboard{% endblock %}</span>
+    <span class="topbar-spacer"></span>
+    <span class="topbar-badge">
+      <i class="fa-solid fa-circle fa-xs"></i>
+      {{ request.user.role|title }}
+    </span>
+  </header>
+
+  <!-- Flash messages -->
+  {% if messages %}
+  <div class="hms-alerts" id="hmsAlerts">
+    {% for msg in messages %}
+      {% if msg.tags == 'success' %}<div class="hms-alert hms-alert-success"><i class="fa-solid fa-circle-check"></i>{{ msg }}</div>
+      {% elif msg.tags == 'error' %}<div class="hms-alert hms-alert-error"><i class="fa-solid fa-circle-xmark"></i>{{ msg }}</div>
+      {% elif msg.tags == 'warning' %}<div class="hms-alert hms-alert-warning"><i class="fa-solid fa-triangle-exclamation"></i>{{ msg }}</div>
+      {% else %}<div class="hms-alert hms-alert-info"><i class="fa-solid fa-circle-info"></i>{{ msg }}</div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Page content -->
+  <main class="hms-page">
+    {% block page_content %}{% endblock %}
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script>
+  function openSidebar()  { document.getElementById('hms-sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('open'); }
+  function closeSidebar() { document.getElementById('hms-sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+  // Auto-dismiss alerts after 4s
+  setTimeout(() => { const a = document.getElementById('hmsAlerts'); if(a) a.style.opacity = '0'; }, 4000);
+
+  // Auto-active sidebar link highlighter
+  document.addEventListener("DOMContentLoaded", () => {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll(".sidebar-nav a");
+    navLinks.forEach(link => {
+      try {
+        const linkPath = new URL(link.href).pathname;
+        if (currentPath === linkPath || (linkPath !== '/' && currentPath.startsWith(linkPath))) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
+        }
+      } catch(e) {}
+    });
+  });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

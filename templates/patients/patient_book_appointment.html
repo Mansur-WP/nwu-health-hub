@@ -1,0 +1,56 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Book Appointment{% endblock %}
+{% block topbar_title %}Book Appointment{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Patient Portal</div>
+<a href="{% url 'patients:patient-profile' %}"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+<a href="{% url 'patients:patient-appointments' %}" class="active"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+<a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescriptions</a>
+<a href="{% url 'patients:patient-payments' %}"><i class="fa-solid fa-money-bill-wave"></i> Payments</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:540px;margin:0 auto;">
+  <a href="{% url 'patients:patient-appointments' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Appointments
+  </a>
+
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(79,110,247,.15);color:#4f6ef7;"><i class="fa-solid fa-calendar-plus"></i></div>
+      <div>
+        <div class="hms-card-title">Book an Appointment</div>
+        <div class="hms-card-sub">A £150 invoice will be auto-generated</div>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="hms-form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div style="font-size:.75rem;color:var(--hms-muted);margin-top:.25rem;">{{ field.help_text }}</div>{% endif %}
+        {% if field.errors %}<div class="hms-form-error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+
+      {% if form.non_field_errors %}
+      <div class="hms-form-error mb-3" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:.65rem 1rem;border-radius:8px;">
+        {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+      </div>
+      {% endif %}
+
+      <div style="background:rgba(79,110,247,.08);border:1px solid rgba(79,110,247,.2);border-radius:9px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.83rem;color:#94a3b8;">
+        <i class="fa-solid fa-circle-info me-1" style="color:#4f6ef7;"></i>
+        A payment invoice of <strong style="color:#e2e8f0;">£150.00</strong> will be created automatically.
+      </div>
+
+      <button type="submit" class="btn-hms btn-hms-primary" style="width:100%;justify-content:center;padding:.72rem;">
+        <i class="fa-solid fa-calendar-check"></i> Confirm Booking
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

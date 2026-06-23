@@ -1,0 +1,56 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Checkout{% endblock %}
+{% block topbar_title %}Checkout{% endblock %}
+
+{% block page_content %}
+<div style="max-width:500px;margin:2rem auto 0;">
+  <a href="{% url 'patients:patient-payments' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Payments
+  </a>
+
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(34,197,94,.15);color:#22c55e;"><i class="fa-solid fa-credit-card"></i></div>
+      <div>
+        <div class="hms-card-title">Payment Checkout</div>
+        <div class="hms-card-sub">Secure billing checkout portal</div>
+      </div>
+    </div>
+
+    <div class="text-center mb-4" style="background:rgba(255,255,255,.04);border-radius:12px;padding:1.5rem;">
+      <div style="font-size:.8rem;color:var(--hms-muted);text-transform:uppercase;letter-spacing:.05em;">Total Amount Due</div>
+      <div style="font-size:2rem;font-weight:700;color:#22c55e;margin-top:.25rem;">£{{ payment.amount }}</div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="hms-form-group">
+        <label>Name on Card</label>
+        <input type="text" placeholder="John Doe" required>
+      </div>
+      <div class="hms-form-group">
+        <label>Card Number</label>
+        <input type="text" placeholder="0000 0000 0000 0000" required>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="hms-form-group">
+            <label>Expiry (MM/YY)</label>
+            <input type="text" placeholder="12/26" required>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="hms-form-group">
+            <label>CVC</label>
+            <input type="text" placeholder="123" required>
+          </div>
+        </div>
+      </div>
+      
+      <button class="btn-hms btn-hms-primary w-100 mt-2" type="submit" style="justify-content:center;padding:.75rem;">
+        <i class="fa-solid fa-lock"></i> Pay Now
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

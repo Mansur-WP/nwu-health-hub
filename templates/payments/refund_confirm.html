@@ -1,0 +1,35 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Refund Payment{% endblock %}
+{% block topbar_title %}Refund Payment{% endblock %}
+
+{% block page_content %}
+<div style="max-width:520px;margin:4rem auto 0;">
+  <a href="{% url 'payments:payment-list' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Ledger
+  </a>
+
+  <div class="hms-card text-center" style="padding:2.5rem 2rem;">
+    <div style="width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;color:#ef4444;font-size:1.75rem;margin:0 auto 1.5rem;">
+      <i class="fa-solid fa-money-bill-transfer"></i>
+    </div>
+    
+    <h1 style="font-size:1.4rem;font-weight:700;margin-bottom:.5rem;color:#ef4444;">Issue Refund</h1>
+    <p style="color:var(--hms-muted);font-size:.875rem;margin-bottom:2rem;">
+      Are you sure you want to refund Payment <strong>#{{ payment.pk }}</strong> for <strong>£{{ payment.amount }}</strong> to patient <strong>{{ payment.patient.user.email }}</strong>?
+    </p>
+    <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:.75rem 1rem;font-size:.8rem;color:var(--hms-danger);margin-bottom:2rem;text-align:left;">
+      <i class="fa-solid fa-triangle-exclamation me-1"></i> <strong>Warning:</strong> This action will mark the status as REFUNDED and cannot be undone.
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-3">
+        <a href="{% url 'payments:payment-list' %}" class="btn-hms btn-hms-ghost" style="flex:1;justify-content:center;">Cancel</a>
+        <button type="submit" class="btn-hms btn-hms-danger" style="flex:1.5;justify-content:center;">
+          <i class="fa-solid fa-check"></i> Yes, Issue Refund
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

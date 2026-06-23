@@ -1,0 +1,16 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Admin{% endblock %}
+{% block topbar_title %}Admin{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Overview</div>
+<a href="{% url 'dashboard:dashboard-home' %}" class="active"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+{% endblock %}
+
+{% block page_content %}
+<script>window.location.href = "{% url 'dashboard:dashboard-home' %}";</script>
+<div class="hms-empty" style="padding:4rem;">
+  <i class="fa-solid fa-arrow-right"></i>
+  <p>Redirecting to Dashboard…</p>
+</div>
+{% endblock %}

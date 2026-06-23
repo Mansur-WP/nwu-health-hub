@@ -1,0 +1,119 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}My Appointments{% endblock %}
+{% block topbar_title %}My Appointments{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Doctor Portal</div>
+<a href="{% url 'doctors:doctor-appointments' %}" class="active"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .filter-tabs { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.25rem; }
+  .filter-tab {
+    padding:.4rem .9rem; border-radius:99px; font-size:.78rem; font-weight:600; cursor:pointer;
+    border:1px solid var(--hms-border); color:var(--hms-muted); background:rgba(255,255,255,.03);
+    transition:all .15s; text-decoration:none;
+  }
+  .filter-tab:hover,.filter-tab.active { background:rgba(79,110,247,.15); border-color:rgba(79,110,247,.4); color:#4f6ef7; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">My Appointments</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">Manage all patient appointments</p>
+  </div>
+</div>
+
+<!-- Filter tabs -->
+<div class="filter-tabs">
+  <a href="?status=" class="filter-tab {% if not request.GET.status %}active{% endif %}">All</a>
+  <a href="?status=pending" class="filter-tab {% if request.GET.status == 'pending' %}active{% endif %}"><i class="fa-solid fa-clock me-1"></i>Pending</a>
+  <a href="?status=approved" class="filter-tab {% if request.GET.status == 'approved' %}active{% endif %}"><i class="fa-solid fa-circle-check me-1"></i>Approved</a>
+  <a href="?status=cancelled" class="filter-tab {% if request.GET.status == 'cancelled' %}active{% endif %}"><i class="fa-solid fa-circle-xmark me-1"></i>Cancelled</a>
+</div>
+
+<div class="hms-card">
+  {% if appointments %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Scheduled</th>
+          <th>Status</th>
+          <th>Payment</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appt in appointments %}
+        {% if not request.GET.status or appt.status == request.GET.status %}
+        <tr>
+          <td>
+            <div style="font-weight:600;">{{ appt.patient.user.full_name|default:appt.patient.user.email }}</div>
+            <div style="font-size:.75rem;color:var(--hms-muted);">{{ appt.patient.user.email }}</div>
+          </td>
+          <td>
+            <div>{{ appt.scheduled_at|date:"M d, Y" }}</div>
+            <div style="font-size:.75rem;color:var(--hms-muted);">{{ appt.scheduled_at|time:"H:i" }}</div>
+          </td>
+          <td>
+            {% if appt.status == 'pending' %}<span class="hms-badge badge-pending">Pending</span>
+            {% elif appt.status == 'approved' %}<span class="hms-badge badge-completed">Approved</span>
+            {% elif appt.status == 'cancelled' %}<span class="hms-badge badge-cancelled">Cancelled</span>
+            {% else %}<span class="hms-badge badge-draft">{{ appt.get_status_display }}</span>{% endif %}
+          </td>
+          <td>
+            {% if appt.is_paid %}
+              <span class="hms-badge badge-paid">✓ Paid</span>
+            {% else %}
+              <span class="hms-badge badge-pending">⏳ Unpaid</span>
+            {% endif %}
+          </td>
+          <td style="color:var(--hms-muted);font-size:.83rem;max-width:180px;">{{ appt.notes|default:"—"|truncatechars:60 }}</td>
+          <td>
+            <div class="d-flex gap-1 flex-wrap">
+              {% if appt.status != 'cancelled' and appt.status != 'approved' %}
+              <a href="{% url 'doctors:doctor-appointment-approve' appt.id %}" class="btn-hms btn-hms-success btn-hms-sm">
+                <i class="fa-solid fa-check"></i> Approve
+              </a>
+              <a href="{% url 'doctors:doctor-appointment-cancel' appt.id %}" class="btn-hms btn-hms-danger btn-hms-sm">
+                <i class="fa-solid fa-xmark"></i> Cancel
+              </a>
+              {% endif %}
+              {% if appt.status == 'approved' %}
+              <a href="{% url 'doctors:doctor-patient-history' appt.patient_id %}" class="btn-hms btn-hms-ghost btn-hms-sm">
+                <i class="fa-solid fa-clock-rotate-left"></i> History
+              </a>
+              {% if not appt.prescription %}
+                {% if appt.is_paid %}
+                <a href="{% url 'doctors:doctor-prescription-create' appt.id %}" class="btn-hms btn-hms-primary btn-hms-sm">
+                  <i class="fa-solid fa-notes-medical"></i> Prescribe
+                </a>
+                {% else %}
+                <span class="btn-hms btn-hms-ghost btn-hms-sm" style="opacity:.4;cursor:not-allowed;" title="Patient has not paid yet">
+                  <i class="fa-solid fa-lock"></i> Awaiting Payment
+                </span>
+                {% endif %}
+              {% endif %}
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty">
+    <i class="fa-solid fa-calendar-xmark"></i>
+    <p>No appointments found.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Cancel Appointment{% endblock %}
+{% block topbar_title %}Cancel Appointment{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Patient Portal</div>
+<a href="{% url 'patients:patient-profile' %}"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+<a href="{% url 'patients:patient-appointments' %}" class="active"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+<a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescriptions</a>
+<a href="{% url 'patients:patient-payments' %}"><i class="fa-solid fa-money-bill-wave"></i> Payments</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:520px;margin:0 auto;">
+  <a href="{% url 'patients:patient-appointments' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Appointments
+  </a>
+
+  <div class="hms-card" style="border-color:rgba(239,68,68,.2);">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(239,68,68,.15);color:#ef4444;"><i class="fa-solid fa-calendar-xmark"></i></div>
+      <div>
+        <div class="hms-card-title">Cancel Appointment</div>
+        <div class="hms-card-sub">This action cannot be undone</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;">
+      <div style="font-size:.78rem;color:var(--hms-muted);margin-bottom:.4rem;text-transform:uppercase;font-weight:600;letter-spacing:.05em;">Appointment details</div>
+      <div style="font-weight:600;">Dr. {{ appointment.doctor.user.last_name }}</div>
+      <div style="color:var(--hms-muted);font-size:.83rem;margin-top:.25rem;">
+        <i class="fa-solid fa-calendar me-1"></i>{{ appointment.scheduled_at|date:"l, F d, Y — H:i" }}
+      </div>
+    </div>
+
+    <p style="color:var(--hms-muted);font-size:.875rem;margin-bottom:1.25rem;">
+      Are you sure you want to cancel this appointment?
+    </p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'patients:patient-appointments' %}" class="btn-hms btn-hms-ghost" style="flex:1;justify-content:center;">Keep It</a>
+        <button type="submit" class="btn-hms btn-hms-danger" style="flex:1;justify-content:center;">
+          <i class="fa-solid fa-xmark"></i> Cancel Appointment
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

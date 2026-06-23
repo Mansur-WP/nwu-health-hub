@@ -1,0 +1,66 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Medication Inventory{% endblock %}
+{% block topbar_title %}Medication Inventory{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Pharmacist Portal</div>
+<a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescription Queue</a>
+<a href="{% url 'pharmacists:inventory-list' %}" class="active"><i class="fa-solid fa-box-archive"></i> Inventory</a>
+{% endblock %}
+
+{% block page_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Medication Inventory</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">Manage stock levels</p>
+  </div>
+  <a href="{% url 'pharmacists:inventory-add' %}" class="btn-hms btn-hms-primary">
+    <i class="fa-solid fa-plus"></i> Add Item
+  </a>
+</div>
+
+<div class="hms-card">
+  {% if inventory %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>Medication</th>
+          <th>Unit</th>
+          <th>Stock</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in inventory %}
+        <tr>
+          <td style="font-weight:600;">{{ item.name }}</td>
+          <td style="color:var(--hms-muted);font-size:.83rem;">{{ item.unit|default:"—" }}</td>
+          <td>
+            {% if item.stock_quantity <= 10 %}
+              <span style="color:#ef4444;font-weight:700;">{{ item.stock_quantity }}</span>
+              <span style="font-size:.72rem;color:#ef4444;margin-left:.25rem;"><i class="fa-solid fa-triangle-exclamation"></i> Low</span>
+            {% elif item.stock_quantity <= 50 %}
+              <span style="color:#f59e0b;font-weight:600;">{{ item.stock_quantity }}</span>
+            {% else %}
+              <span style="color:#22c55e;font-weight:600;">{{ item.stock_quantity }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'pharmacists:inventory-edit' item.pk %}" class="btn-hms btn-hms-ghost btn-hms-sm">
+              <i class="fa-solid fa-pen"></i> Edit
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty">
+    <i class="fa-solid fa-box-open"></i>
+    <p>No inventory items yet. <a href="{% url 'pharmacists:inventory-add' %}" style="color:#4f6ef7;">Add your first item.</a></p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

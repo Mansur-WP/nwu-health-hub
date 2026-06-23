@@ -1,0 +1,61 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}My Profile{% endblock %}
+{% block topbar_title %}My Profile{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Patient Portal</div>
+<a href="{% url 'patients:patient-profile' %}" class="active"><i class="fa-solid fa-circle-user"></i> My Profile</a>
+<a href="{% url 'patients:patient-appointments' %}"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+<a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescriptions</a>
+<a href="{% url 'patients:patient-payments' %}"><i class="fa-solid fa-money-bill-wave"></i> Payments</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:640px;margin:0 auto;">
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h1 style="font-size:1.5rem;font-weight:700;margin:0;">My Profile</h1>
+      <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">Your personal information</p>
+    </div>
+    <a href="{% url 'patients:patient-profile-edit' %}" class="btn-hms btn-hms-primary">
+      <i class="fa-solid fa-pen"></i> Edit Profile
+    </a>
+  </div>
+
+  <!-- Avatar card -->
+  <div class="hms-card mb-4" style="padding:1.75rem;text-align:center;">
+    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4f6ef7,#a78bfa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1.75rem;margin:0 auto 1rem;">
+      {{ patient.user.first_name|first|upper }}{{ patient.user.last_name|first|upper }}
+    </div>
+    <div style="font-size:1.2rem;font-weight:700;">{{ patient.user.full_name|default:"Patient" }}</div>
+    <div style="color:var(--hms-muted);font-size:.875rem;margin:.25rem 0 .75rem;">{{ patient.user.email }}</div>
+    <span class="hms-badge badge-patient">Patient</span>
+  </div>
+
+  <!-- Details card -->
+  <div class="hms-card">
+    <div class="hms-card-title mb-3">Personal Details</div>
+    <div class="d-flex flex-column gap-3">
+      {% if patient.phone %}
+      <div class="d-flex align-items-center gap-3" style="padding-bottom:.75rem;border-bottom:1px solid var(--hms-border);">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(79,110,247,.1);display:flex;align-items:center;justify-content:center;color:#4f6ef7;flex-shrink:0;"><i class="fa-solid fa-phone"></i></div>
+        <div><div style="font-size:.7rem;color:var(--hms-muted);text-transform:uppercase;font-weight:600;">Phone</div><div style="font-size:.9rem;">{{ patient.phone }}</div></div>
+      </div>
+      {% endif %}
+      {% if patient.address %}
+      <div class="d-flex align-items-center gap-3">
+        <div style="width:36px;height:36px;border-radius:9px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;color:#22c55e;flex-shrink:0;"><i class="fa-solid fa-location-dot"></i></div>
+        <div><div style="font-size:.7rem;color:var(--hms-muted);text-transform:uppercase;font-weight:600;">Address</div><div style="font-size:.9rem;">{{ patient.address }}</div></div>
+      </div>
+      {% endif %}
+      {% if not patient.phone and not patient.address %}
+
+      <div class="hms-empty" style="padding:1.5rem;">
+        <i class="fa-solid fa-user-pen"></i>
+        <p>No details added yet. <a href="{% url 'patients:patient-profile-edit' %}" style="color:#4f6ef7;">Update your profile.</a></p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

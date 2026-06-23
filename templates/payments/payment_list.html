@@ -1,0 +1,73 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Payment Ledger{% endblock %}
+{% block topbar_title %}Payment Ledger{% endblock %}
+
+{% block page_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Payment Ledger</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">Historical transaction ledger and billing status</p>
+  </div>
+</div>
+
+<div class="hms-card">
+  {% if payments %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Patient</th>
+          <th>Appointment</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Paid At</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for payment in payments %}
+          <tr>
+            <td style="font-weight:600;">#{{ payment.pk }}</td>
+            <td>
+              <div style="font-weight:500;">{{ payment.patient.user.full_name|default:payment.patient.user.email }}</div>
+              <div style="font-size:.75rem;color:var(--hms-muted);">{{ payment.patient.user.email }}</div>
+            </td>
+            <td>
+              <div>{{ payment.appointment.scheduled_at|date:"M d, Y" }}</div>
+              <div style="font-size:.75rem;color:var(--hms-muted);">Dr. {{ payment.appointment.doctor.user.last_name }}</div>
+            </td>
+            <td style="font-weight:700;color:var(--hms-text);">£{{ payment.amount }}</td>
+            <td>
+              {% if payment.status == 'paid' %}<span class="hms-badge badge-paid">Paid</span>
+              {% elif payment.status == 'pending' %}<span class="hms-badge badge-pending">Pending</span>
+              {% elif payment.status == 'refunded' %}<span class="hms-badge badge-refunded">Refunded</span>
+              {% else %}<span class="hms-badge badge-draft">{{ payment.get_status_display }}</span>{% endif %}
+            </td>
+            <td style="font-size:.83rem;color:var(--hms-muted);">{{ payment.paid_at|date:"M d, Y"|default:"—" }}</td>
+            <td class="text-end">
+              {% if request.user.role == 'patient' %}
+                {% if payment.status == 'pending' %}
+                  <a class="btn-hms btn-hms-primary btn-hms-sm" href="{% url 'payments:payment-checkout' payment.pk %}">Pay Now</a>
+                {% elif payment.status == 'paid' %}
+                  <a class="btn-hms btn-hms-ghost btn-hms-sm" href="{% url 'payments:payment-receipt' payment.pk %}">Receipt</a>
+                {% endif %}
+              {% elif request.user.role == 'admin' %}
+                {% if payment.status == 'paid' %}
+                  <a class="btn-hms btn-hms-danger btn-hms-sm" href="{% url 'payments:payment-refund' payment.pk %}">Refund</a>
+                {% endif %}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty">
+    <i class="fa-solid fa-receipt"></i>
+    <p>No payments recorded in the ledger yet.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

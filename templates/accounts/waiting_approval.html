@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Waiting for Approval{% endblock %}
+
+{% block content %}
+<div style="max-width:900px;margin:2rem auto;padding:1.25rem;">
+  <div style="background:#0f1117;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:1.5rem;">
+    <div style="display:flex;gap:1rem;align-items:flex-start;">
+      <div style="width:56px;height:56px;border-radius:16px;background:rgba(79,110,247,.15);border:1px solid rgba(79,110,247,.35);display:flex;align-items:center;justify-content:center;color:#4f6ef7;font-size:1.25rem;flex-shrink:0;">
+        <i class="fa-solid fa-hourglass-half"></i>
+      </div>
+      <div>
+        <h1 style="margin:0 0 .5rem 0;color:#e2e8f0;">Waiting for NWU HealthHub approval</h1>
+        <p style="margin:0;color:#94a3b8;line-height:1.7;">
+          Your doctor/pharmacist account is currently pending admin approval.
+          During this time your dashboard access is disabled.
+        </p>
+        <div style="margin-top:1rem;color:#94a3b8;font-size:.95rem;">
+          <i class="fa-solid fa-circle-info" style="color:#4f6ef7;margin-right:.5rem;"></i>
+          Once approved by the admin, you’ll be able to access your dashboard automatically.
+        </div>
+        <div style="margin-top:1.5rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+          <a href="{% url 'accounts:login' %}" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:.7rem 1rem;border-radius:12px;background:#4f6ef7;color:#fff;font-weight:700;">
+            Go to Login
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

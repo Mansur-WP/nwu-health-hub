@@ -1,0 +1,176 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block topbar_title %}Admin Dashboard{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Overview</div>
+<a href="{% url 'dashboard:dashboard-home' %}" class="active"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+<div class="sidebar-section">Management</div>
+<a href="{% url 'dashboard:doctor-list' %}"><i class="fa-solid fa-user-doctor"></i> Manage Doctors</a>
+<a href="{% url 'dashboard:staff-list' %}"><i class="fa-solid fa-user-tie"></i> Manage Staff</a>
+<a href="{% url 'dashboard:doctor-add' %}"><i class="fa-solid fa-plus"></i> Add Doctor</a>
+<a href="{% url 'dashboard:staff-add' %}"><i class="fa-solid fa-user-plus"></i> Add Staff</a>
+<a href="{% url 'dashboard:payments-verify' %}"><i class="fa-solid fa-circle-check"></i> Verify Payments</a>
+{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  .kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:1rem; margin-bottom:1.75rem; }
+  .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+  @media(max-width:900px){ .quick-grid{ grid-template-columns:1fr; } }
+  .chart-wrap { position:relative; height:260px; }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<!-- Page header -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">System Overview</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">All HMS activity at a glance</p>
+  </div>
+  {% if payment_pending_count > 0 %}
+  <form method="post" action="{% url 'dashboard:payments-verify' %}">
+    {% csrf_token %}
+    <button class="btn-hms btn-hms-success" type="submit">
+      <i class="fa-solid fa-circle-check"></i> Verify {{ payment_pending_count }} Payment{{ payment_pending_count|pluralize }}
+    </button>
+  </form>
+  {% endif %}
+</div>
+
+<!-- KPI Tiles -->
+<div class="kpi-grid">
+  <div class="stat-tile">
+    <div class="stat-tile-icon" style="background:rgba(79,110,247,.15);color:#4f6ef7;"><i class="fa-solid fa-users"></i></div>
+    <div><div class="stat-tile-val">{{ stats.total_patients }}</div><div class="stat-tile-lbl">Patients</div></div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-tile-icon" style="background:rgba(34,197,94,.15);color:#22c55e;"><i class="fa-solid fa-user-doctor"></i></div>
+    <div><div class="stat-tile-val">{{ stats.total_doctors }}</div><div class="stat-tile-lbl">Doctors</div></div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-tile-icon" style="background:rgba(245,158,11,.15);color:#f59e0b;"><i class="fa-solid fa-calendar-check"></i></div>
+    <div><div class="stat-tile-val">{{ stats.total_appointments }}</div><div class="stat-tile-lbl">Appointments</div></div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-tile-icon" style="background:rgba(168,85,247,.15);color:#c084fc;"><i class="fa-solid fa-notes-medical"></i></div>
+    <div><div class="stat-tile-val">{{ stats.total_prescriptions }}</div><div class="stat-tile-lbl">Prescriptions</div></div>
+  </div>
+  <div class="stat-tile">
+    <div class="stat-tile-icon" style="background:rgba(239,68,68,.15);color:#ef4444;"><i class="fa-solid fa-money-bill-wave"></i></div>
+    <div><div class="stat-tile-val">{{ stats.total_payments }}</div><div class="stat-tile-lbl">Payments</div></div>
+  </div>
+</div>
+
+<!-- Charts + Actions -->
+<div class="quick-grid">
+  <!-- Appointment breakdown chart -->
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(79,110,247,.15);color:#4f6ef7;"><i class="fa-solid fa-chart-bar"></i></div>
+      <div>
+        <div class="hms-card-title">Appointments by Status</div>
+        <div class="hms-card-sub">Live breakdown</div>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="apptChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(245,158,11,.15);color:#f59e0b;"><i class="fa-solid fa-bolt"></i></div>
+      <div>
+        <div class="hms-card-title">Quick Actions</div>
+        <div class="hms-card-sub">Common admin tasks</div>
+      </div>
+    </div>
+    <div class="d-flex flex-column gap-2">
+      <a href="{% url 'dashboard:doctor-add' %}" class="btn-hms btn-hms-primary" style="justify-content:flex-start;">
+        <i class="fa-solid fa-user-doctor"></i> Add New Doctor
+      </a>
+      <a href="{% url 'dashboard:staff-add' %}" class="btn-hms btn-hms-ghost" style="justify-content:flex-start;">
+        <i class="fa-solid fa-user-tie"></i> Add New Staff Member
+      </a>
+      {% if payment_pending_count > 0 %}
+      <form method="post" action="{% url 'dashboard:payments-verify' %}">
+        {% csrf_token %}
+        <button class="btn-hms btn-hms-success w-100" type="submit" style="justify-content:flex-start;">
+          <i class="fa-solid fa-circle-check"></i> Verify All Pending Payments ({{ payment_pending_count }})
+        </button>
+      </form>
+      {% else %}
+      <div class="btn-hms btn-hms-ghost" style="justify-content:flex-start;opacity:.5;cursor:default;">
+        <i class="fa-solid fa-circle-check"></i> No Pending Payments
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Recent Prescriptions -->
+<div class="hms-card mt-4">
+  <div class="hms-card-header">
+    <div class="hms-card-icon" style="background:rgba(168,85,247,.15);color:#c084fc;"><i class="fa-solid fa-notes-medical"></i></div>
+    <div>
+      <div class="hms-card-title">Recent Prescriptions</div>
+      <div class="hms-card-sub">Latest 8 entries</div>
+    </div>
+  </div>
+  {% if prescriptions %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Medicine</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in prescriptions %}
+        <tr>
+          <td>{{ p.patient.user.full_name|default:p.patient.user.email }}</td>
+          <td>Dr. {{ p.doctor.user.last_name }}</td>
+          <td>{{ p.medicine }}</td>
+          <td>{{ p.date|date:"M d, Y" }}</td>
+          <td>
+            {% if p.status == 'draft' %}<span class="hms-badge badge-draft">Draft</span>
+            {% elif p.status == 'pending' %}<span class="hms-badge badge-pending">Sent</span>
+            {% else %}<span class="hms-badge badge-dispensed">Dispensed</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty"><i class="fa-solid fa-notes-medical"></i><p>No prescriptions yet.</p></div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const labels = {{ chart.labels|safe }};
+const values = {{ chart.values|safe }};
+const colorMap = { pending:'#f59e0b', approved:'#22c55e', cancelled:'#ef4444' };
+const colors = labels.map(l => colorMap[l] || '#94a3b8');
+const ctx = document.getElementById('apptChart');
+if(ctx && labels.length){
+  new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels, datasets:[{ data:values, backgroundColor:colors, borderColor:'#1e2540', borderWidth:3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:'#94a3b8', font:{size:12}, padding:16 } } } }
+  });
+} else if(ctx){
+  ctx.parentElement.innerHTML = '<div class="hms-empty"><i class="fa-solid fa-chart-pie"></i><p>No appointment data yet.</p></div>';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Manage Doctors{% endblock %}
+{% block topbar_title %}Manage Doctors{% endblock %}
+
+{% block page_content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+  <div>
+    <h1 style="font-size:1.5rem;font-weight:700;margin:0;">Doctors</h1>
+    <p style="color:var(--hms-muted);font-size:.83rem;margin:.2rem 0 0;">View and manage all doctor accounts</p>
+  </div>
+  <a href="{% url 'dashboard:doctor-add' %}" class="btn-hms btn-hms-primary">
+    <i class="fa-solid fa-plus"></i> Add Doctor
+  </a>
+</div>
+
+{% if messages %}
+  {% for msg in messages %}
+  <div style="padding:.75rem 1rem;border-radius:10px;margin-bottom:1rem;font-size:.875rem;font-weight:500;
+    {% if msg.tags == 'success' %}background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#4ade80;
+    {% elif msg.tags == 'warning' %}background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);color:#fbbf24;
+    {% elif msg.tags == 'error' %}background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;
+    {% else %}background:rgba(79,110,247,.12);border:1px solid rgba(79,110,247,.3);color:#818cf8;{% endif %}">
+    {{ msg }}
+  </div>
+  {% endfor %}
+{% endif %}
+
+<div class="hms-card">
+  <div class="hms-card-header">
+    <div class="hms-card-icon" style="background:rgba(34,197,94,.15);color:#22c55e;"><i class="fa-solid fa-user-doctor"></i></div>
+    <div>
+      <div class="hms-card-title">All Doctors</div>
+      <div class="hms-card-sub">{{ doctors|length }} doctor{{ doctors|length|pluralize }}</div>
+    </div>
+  </div>
+
+  {% if doctors %}
+  <div style="overflow-x:auto;">
+    <table class="hms-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Specialization</th>
+          <th>Phone</th>
+          <th>Joined</th>
+          <th>Status</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in doctors %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:.75rem;">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#15803d);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0;">
+                {{ doc.user.first_name|first|upper|default:"D" }}{{ doc.user.last_name|first|upper }}
+              </div>
+              <div>
+                <div style="font-weight:600;">Dr. {{ doc.user.full_name|default:doc.user.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="color:var(--hms-muted);">{{ doc.user.email }}</td>
+          <td>
+            {% if doc.specialization %}
+              <span class="hms-badge" style="background:rgba(79,110,247,.15);color:#4f6ef7;">{{ doc.specialization }}</span>
+            {% else %}
+              <span style="color:var(--hms-muted);font-size:.83rem;">—</span>
+            {% endif %}
+          </td>
+          <td style="color:var(--hms-muted);font-size:.83rem;">{{ doc.phone|default:"—" }}</td>
+          <td style="color:var(--hms-muted);font-size:.83rem;">{{ doc.user.date_joined|date:"M d, Y" }}</td>
+
+          {# ── Approval status badge ── #}
+          <td>
+            {% if doc.approval_status == "approved" %}
+              <span class="hms-badge" style="background:rgba(34,197,94,.15);color:#4ade80;display:inline-flex;align-items:center;gap:.35rem;">
+                <i class="fa-solid fa-circle-check" style="font-size:.7rem;"></i> Approved
+              </span>
+            {% elif doc.approval_status == "rejected" %}
+              <span class="hms-badge" style="background:rgba(239,68,68,.15);color:#f87171;display:inline-flex;align-items:center;gap:.35rem;">
+                <i class="fa-solid fa-circle-xmark" style="font-size:.7rem;"></i> Rejected
+              </span>
+            {% else %}
+              <span class="hms-badge" style="background:rgba(251,191,36,.15);color:#fbbf24;display:inline-flex;align-items:center;gap:.35rem;">
+                <i class="fa-solid fa-hourglass-half" style="font-size:.7rem;"></i> Pending
+              </span>
+            {% endif %}
+          </td>
+
+          {# ── Action buttons ── #}
+          <td style="text-align:right;">
+            <div style="display:inline-flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;">
+
+              {% if doc.approval_status != "approved" %}
+              {# Approve button #}
+              <form method="post" action="{% url 'dashboard:doctor-approve' doc.pk %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="btn-hms btn-hms-sm"
+                  style="background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);cursor:pointer;"
+                  title="Approve this doctor">
+                  <i class="fa-solid fa-check"></i> Approve
+                </button>
+              </form>
+              {% endif %}
+
+              {% if doc.approval_status == "approved" %}
+              {# Revoke / Reset to Pending button #}
+              <form method="post" action="{% url 'dashboard:doctor-approve' doc.pk %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="pending">
+                <button type="submit" class="btn-hms btn-hms-sm"
+                  style="background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.3);cursor:pointer;"
+                  title="Revoke approval">
+                  <i class="fa-solid fa-rotate-left"></i> Revoke
+                </button>
+              </form>
+              {% endif %}
+
+              {% if doc.approval_status != "rejected" %}
+              {# Reject button #}
+              <form method="post" action="{% url 'dashboard:doctor-approve' doc.pk %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reject">
+                <button type="submit" class="btn-hms btn-hms-sm"
+                  style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.3);cursor:pointer;"
+                  title="Reject this doctor">
+                  <i class="fa-solid fa-xmark"></i> Reject
+                </button>
+              </form>
+              {% endif %}
+
+              {# Delete button — always visible #}
+              <a href="{% url 'dashboard:doctor-delete' doc.pk %}" class="btn-hms btn-hms-danger btn-hms-sm">
+                <i class="fa-solid fa-trash"></i> Delete
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="hms-empty">
+    <i class="fa-solid fa-user-doctor"></i>
+    <p>No doctors found.</p>
+    <a href="{% url 'dashboard:doctor-add' %}" class="btn-hms btn-hms-primary mt-3" style="display:inline-flex;">
+      <i class="fa-solid fa-plus"></i> Add First Doctor
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

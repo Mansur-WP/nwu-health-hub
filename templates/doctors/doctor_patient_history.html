@@ -1,0 +1,113 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Patient History — {{ patient.user.full_name|default:patient.user.email }}{% endblock %}
+{% block topbar_title %}Patient History{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Doctor Portal</div>
+<a href="{% url 'doctors:doctor-appointments' %}"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:860px;margin:0 auto;">
+  <a href="{% url 'doctors:doctor-appointments' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Appointments
+  </a>
+
+  <!-- Patient header -->
+  <div class="hms-card mb-4" style="padding:1.25rem 1.5rem;">
+    <div class="d-flex align-items-center gap-3">
+      <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#4f6ef7,#a78bfa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1.2rem;flex-shrink:0;">
+        {{ patient.user.first_name|first|upper }}{{ patient.user.last_name|first|upper }}
+      </div>
+      <div>
+        <div style="font-size:1.1rem;font-weight:700;">{{ patient.user.full_name|default:"Patient" }}</div>
+        <div style="font-size:.8rem;color:var(--hms-muted);">{{ patient.user.email }}</div>
+        {% if patient.phone %}<div style="font-size:.8rem;color:var(--hms-muted);"><i class="fa-solid fa-phone me-1"></i>{{ patient.phone }}</div>{% endif %}
+      </div>
+      <div class="ms-auto"><span class="hms-badge badge-patient">Patient</span></div>
+    </div>
+  </div>
+
+  <!-- Visits -->
+  <div class="hms-card mb-4">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(245,158,11,.15);color:#f59e0b;"><i class="fa-solid fa-calendar-check"></i></div>
+      <div>
+        <div class="hms-card-title">Visit History</div>
+        <div class="hms-card-sub">{{ appointments|length }} appointment{{ appointments|length|pluralize }}</div>
+      </div>
+    </div>
+    {% if appointments %}
+    <div style="overflow-x:auto;">
+      <table class="hms-table">
+        <thead>
+          <tr><th>Date</th><th>Status</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          {% for a in appointments %}
+          <tr>
+            <td>{{ a.scheduled_at|date:"M d, Y — H:i" }}</td>
+            <td>
+              {% if a.status == 'pending' %}<span class="hms-badge badge-pending">Pending</span>
+              {% elif a.status == 'approved' %}<span class="hms-badge badge-completed">Approved</span>
+              {% elif a.status == 'cancelled' %}<span class="hms-badge badge-cancelled">Cancelled</span>
+              {% else %}<span class="hms-badge badge-draft">{{ a.get_status_display }}</span>{% endif %}
+            </td>
+            <td style="color:var(--hms-muted);font-size:.83rem;">{{ a.notes|default:"—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="hms-empty"><i class="fa-solid fa-calendar-xmark"></i><p>No visit history.</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Prescriptions -->
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(168,85,247,.15);color:#c084fc;"><i class="fa-solid fa-notes-medical"></i></div>
+      <div>
+        <div class="hms-card-title">Prescriptions</div>
+        <div class="hms-card-sub">{{ prescriptions|length }} record{{ prescriptions|length|pluralize }}</div>
+      </div>
+    </div>
+    {% if prescriptions %}
+    <div class="d-flex flex-column gap-3">
+      {% for p in prescriptions %}
+      <div style="background:rgba(255,255,255,.04);border:1px solid var(--hms-border);border-radius:12px;padding:1rem 1.25rem;">
+        <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+          <div>
+            <div style="font-weight:600;font-size:.95rem;">{{ p.medicine }}</div>
+            <div style="color:var(--hms-muted);font-size:.8rem;margin-top:.2rem;">{{ p.date|date:"M d, Y" }}</div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            {% if p.status == 'draft' %}
+              <span class="hms-badge badge-draft">Draft</span>
+              <form method="post" action="{% url 'doctors:doctor-prescription-send' p.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn-hms btn-hms-primary btn-hms-sm">
+                  <i class="fa-solid fa-paper-plane"></i> Send to Pharmacy
+                </button>
+              </form>
+            {% elif p.status == 'pending' %}
+              <span class="hms-badge badge-pending">Sent to Pharmacy</span>
+            {% else %}
+              <span class="hms-badge badge-dispensed">Dispensed</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="mt-2 d-flex gap-3 flex-wrap" style="font-size:.82rem;color:var(--hms-muted);">
+          <span><i class="fa-solid fa-capsules me-1"></i>{{ p.dosage }}</span>
+          {% if p.instructions %}<span><i class="fa-solid fa-file-medical me-1"></i>{{ p.instructions }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="hms-empty"><i class="fa-solid fa-notes-medical"></i><p>No prescriptions written yet.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

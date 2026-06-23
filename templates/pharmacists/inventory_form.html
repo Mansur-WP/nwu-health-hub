@@ -1,0 +1,46 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}{% if item %}Edit{% else %}Add{% endif %} Inventory Item{% endblock %}
+{% block topbar_title %}{% if item %}Edit{% else %}Add{% endif %} Inventory Item{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Pharmacist Portal</div>
+<a href="{% url 'prescriptions:prescription-list' %}"><i class="fa-solid fa-notes-medical"></i> Prescription Queue</a>
+<a href="{% url 'pharmacists:inventory-list' %}" class="active"><i class="fa-solid fa-box-archive"></i> Inventory</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:500px;margin:0 auto;">
+  <a href="{% url 'pharmacists:inventory-list' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back to Inventory
+  </a>
+
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(34,197,94,.15);color:#22c55e;"><i class="fa-solid fa-box-archive"></i></div>
+      <div>
+        <div class="hms-card-title">{% if item %}Edit Item{% else %}Add Inventory Item{% endif %}</div>
+        <div class="hms-card-sub">{% if item %}Update stock details{% else %}Add a new medication to stock{% endif %}</div>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="hms-form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div style="font-size:.75rem;color:var(--hms-muted);margin-top:.25rem;">{{ field.help_text }}</div>{% endif %}
+        {% if field.errors %}<div class="hms-form-error">{{ field.errors.0 }}</div>{% endif %}
+      </div>
+      {% endfor %}
+
+      <div class="d-flex gap-2 mt-3">
+        <a href="{% url 'pharmacists:inventory-list' %}" class="btn-hms btn-hms-ghost">Cancel</a>
+        <button type="submit" class="btn-hms btn-hms-primary" style="flex:1;justify-content:center;">
+          <i class="fa-solid fa-floppy-disk"></i> {% if item %}Save Changes{% else %}Add Item{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends 'base_dashboard.html' %}
+{% block title %}Write Prescription{% endblock %}
+{% block topbar_title %}Write Prescription{% endblock %}
+
+{% block sidebar_nav %}
+<div class="sidebar-section">Doctor Portal</div>
+<a href="{% url 'doctors:doctor-appointments' %}"><i class="fa-solid fa-calendar-check"></i> Appointments</a>
+{% endblock %}
+
+{% block page_content %}
+<div style="max-width:600px;margin:0 auto;">
+  <a href="{% url 'doctors:doctor-appointments' %}" class="btn-hms btn-hms-ghost btn-hms-sm mb-4" style="display:inline-flex;">
+    <i class="fa-solid fa-arrow-left"></i> Back
+  </a>
+
+  <!-- Patient info strip -->
+  <div class="hms-card mb-4" style="padding:1rem 1.25rem;">
+    <div class="d-flex align-items-center gap-3">
+      <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#4f6ef7,#a78bfa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:1rem;flex-shrink:0;">
+        {{ appointment.patient.user.first_name|first|upper }}{{ appointment.patient.user.last_name|first|upper }}
+      </div>
+      <div>
+        <div style="font-weight:600;">{{ appointment.patient.user.full_name|default:appointment.patient.user.email }}</div>
+        <div style="font-size:.78rem;color:var(--hms-muted);">Appointment: {{ appointment.scheduled_at|date:"M d, Y" }}</div>
+      </div>
+      <div class="ms-auto"><span class="hms-badge badge-completed">Approved</span></div>
+    </div>
+  </div>
+
+  <!-- Prescription form -->
+  <div class="hms-card">
+    <div class="hms-card-header">
+      <div class="hms-card-icon" style="background:rgba(168,85,247,.15);color:#c084fc;"><i class="fa-solid fa-notes-medical"></i></div>
+      <div>
+        <div class="hms-card-title">New Prescription</div>
+        <div class="hms-card-sub">Saved as Draft — send to pharmacy when ready</div>
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="hms-form-group">
+        <label>Medicine / Drug name</label>
+        <input type="text" name="medicine" placeholder="e.g. Amoxicillin 500mg" value="{{ form.medicine.value|default:'' }}" required>
+        {% if form.medicine.errors %}<div class="hms-form-error">{{ form.medicine.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="hms-form-group">
+        <label>Dosage</label>
+        <input type="text" name="dosage" placeholder="e.g. 1 tablet 3× daily for 7 days" value="{{ form.dosage.value|default:'' }}" required>
+        {% if form.dosage.errors %}<div class="hms-form-error">{{ form.dosage.errors.0 }}</div>{% endif %}
+      </div>
+      <div class="hms-form-group">
+        <label>Instructions <span style="font-weight:400;text-transform:none;color:var(--hms-muted);">(optional)</span></label>
+        <textarea name="instructions" placeholder="Take with food. Avoid alcohol.">{{ form.instructions.value|default:'' }}</textarea>
+        {% if form.instructions.errors %}<div class="hms-form-error">{{ form.instructions.errors.0 }}</div>{% endif %}
+      </div>
+
+      {% if form.non_field_errors %}
+      <div class="hms-form-error mb-3" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);padding:.65rem 1rem;border-radius:8px;">
+        {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="d-flex gap-2 mt-3">
+        <a href="{% url 'doctors:doctor-appointments' %}" class="btn-hms btn-hms-ghost">Cancel</a>
+        <button type="submit" class="btn-hms btn-hms-primary" style="flex:1;justify-content:center;">
+          <i class="fa-solid fa-floppy-disk"></i> Save as Draft
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
