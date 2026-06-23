@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,31 +21,28 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-import os
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Use an environment variable in production.
 # For local development, a weak fallback is provided so the app can start.
-SECRET_KEY = os.environ.get(
-    "DJANGO_SECRET_KEY",
-    "dev-insecure-change-me-please",
-)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DJANGO_DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower()
 DEBUG = DJANGO_DEBUG in ("1", "true", "yes")
 
+
 # Configure allowed hosts via environment variable (comma-separated)
+# On Render, you must allow the app hostname, usually:
+#   <app>.onrender.com
 DJANGO_ALLOWED_HOSTS = os.environ.get(
     "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1",
+    "localhost,127.0.0.1,.onrender.com",
 )
 ALLOWED_HOSTS = [
     host.strip() for host in DJANGO_ALLOWED_HOSTS.split(",") if host.strip()
 ]
-
-
 
 
 # Application definition
@@ -69,6 +68,10 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+
+    # WhiteNoise: serves static files efficiently in production.
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,6 +79,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'hms.urls'
 
@@ -100,16 +104,34 @@ WSGI_APPLICATION = 'hms.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# Render provides DATABASE_URL.
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-        'OPTIONS': {
-            'timeout': 20,
+if DATABASE_URL:
+    import dj_database_url  # type: ignore
+
+    DATABASES = dj_database_url.parse(
+        DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=True,
+    )
+
+else:
+    # Fallback to individual env vars for local testing
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('POSTGRES_DB', ''),
+            'USER': os.environ.get('POSTGRES_USER', ''),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
+            'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
+            'PORT': os.environ.get('POSTGRES_PORT', '5432'),
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'sslmode': os.environ.get('POSTGRES_SSLMODE', 'require'),
+            },
         }
     }
-}
 
 
 # Password validation
@@ -146,10 +168,20 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# WhiteNoise storage to enable cache busting.
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -163,4 +195,52 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'home'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+# Security headers / cookies
+# Enable only when not debugging.
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = 'DENY'
+
+    # HTTPS
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '31536000'))
+    SECURE_HSTS_PRELOAD = os.environ.get('SECURE_HSTS_PRELOAD', 'true').lower() in ('1', 'true', 'yes')
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+    # Cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = False
+
+    # CSRF trusted origins
+    # Example: https://myapp.onrender.com
+    CSRF_TRUSTED_ORIGINS = [
+        origin.strip()
+        for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+        if origin.strip()
+    ]
+else:
+    CSRF_TRUSTED_ORIGINS = []
+
+
+# Logging (use default Django logging in dev)
+LOG_LEVEL = os.environ.get('DJANGO_LOG_LEVEL', 'INFO')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': LOG_LEVEL,
+    },
+}
 

@@ -66,4 +66,3 @@ def inventory_update(request, pk: int):
         "pharmacists/inventory_form.html",
         {"form": form, "item": item},
     )
-
