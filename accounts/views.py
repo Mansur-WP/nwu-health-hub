@@ -14,7 +14,7 @@ from django.contrib.auth import get_user_model
 def create_admin(request):
     User = get_user_model()
 
-    email = "admin@nwu.com"
+    email = "admin@nwu-health-hub.com"
 
     if User.objects.filter(email=email).exists():
         return HttpResponse("Admin already exists.")
