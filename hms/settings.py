@@ -25,7 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 # Use an environment variable in production.
 # For local development, a weak fallback is provided so the app can start.
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "dev-insecure-change-me-please",
+)
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -115,23 +118,39 @@ if DATABASE_URL:
         conn_max_age=600,
         ssl_require=True,
     )
-
 else:
-    # Fallback to individual env vars for local testing
+    # Fallback to individual env vars for local testing.
+    # Render should normally provide DATABASE_URL; if not, the web
+    # service is misconfigured.
+    postgres_db = os.environ.get("POSTGRES_DB")
+    postgres_user = os.environ.get("POSTGRES_USER")
+    postgres_password = os.environ.get("POSTGRES_PASSWORD")
+
+    postgres_host = os.environ.get("POSTGRES_HOST", "localhost")
+    postgres_port = os.environ.get("POSTGRES_PORT", "5432")
+
+    if not postgres_db or not postgres_user or not postgres_password:
+        raise RuntimeError(
+            "PostgreSQL is not configured. Provide DATABASE_URL, or set "
+            "POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD (and optional "
+            "POSTGRES_HOST/POSTGRES_PORT)."
+        )
+
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('POSTGRES_DB', ''),
-            'USER': os.environ.get('POSTGRES_USER', ''),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
-            'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
-            'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-            'CONN_MAX_AGE': 600,
-            'OPTIONS': {
-                'sslmode': os.environ.get('POSTGRES_SSLMODE', 'require'),
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": postgres_db,
+            "USER": postgres_user,
+            "PASSWORD": postgres_password,
+            "HOST": postgres_host,
+            "PORT": postgres_port,
+            "CONN_MAX_AGE": 600,
+            "OPTIONS": {
+                "sslmode": os.environ.get("POSTGRES_SSLMODE", "require"),
             },
         }
     }
+
 
 
 # Password validation
