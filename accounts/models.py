@@ -5,16 +5,6 @@ from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils import timezone
 
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-if not User.objects.filter(email="admin@nwu.com").exists():
-    User.objects.create_superuser(
-        email="maislformansur@gmail.com",
-        password="Admin12345"
-    )
-
 
 
 
