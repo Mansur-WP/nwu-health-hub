@@ -9,5 +9,5 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     path("admin/", views.admin_home, name="role-admin"),
     path("pending-approval/", views.pending_approval_view, name="pending-approval"),
-    path("setup-admin-secret-9827/", views.create_admin, name="create_admin"),
+
 ]
