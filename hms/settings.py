@@ -110,24 +110,25 @@ WSGI_APPLICATION = 'hms.wsgi.application'
 # Render provides DATABASE_URL.
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
 if DATABASE_URL:
-    import dj_database_url  # type: ignore
+    import dj_database_url
 
-    DATABASES = dj_database_url.parse(
-        DATABASE_URL,
-        conn_max_age=600,
-        ssl_require=True,
-    )
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
 else:
-    # Fallback to individual env vars for local testing.
-    # Render should normally provide DATABASE_URL; if not, the web
-    # service is misconfigured.
-    postgres_db = os.environ.get("POSTGRES_DB")
-    postgres_user = os.environ.get("POSTGRES_USER")
-    postgres_password = os.environ.get("POSTGRES_PASSWORD")
-
-    postgres_host = os.environ.get("POSTGRES_HOST", "localhost")
-    postgres_port = os.environ.get("POSTGRES_PORT", "5432")
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
     if not postgres_db or not postgres_user or not postgres_password:
         raise RuntimeError(
