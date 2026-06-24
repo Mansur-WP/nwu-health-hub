@@ -8,6 +8,23 @@ from django.shortcuts import redirect, render
 
 from .auth import role_required
 
+from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+
+def create_admin(request):
+    User = get_user_model()
+
+    email = "admin@nwu.com"
+
+    if User.objects.filter(email=email).exists():
+        return HttpResponse("Admin already exists.")
+
+    User.objects.create_superuser(
+        email=email,
+        password="Admin12345"
+    )
+
+    return HttpResponse("Admin created successfully.")
 
 def _role_redirect_name(role: str) -> str:
     """Map user roles to their landing URL names."""
